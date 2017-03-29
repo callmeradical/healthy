@@ -1,0 +1,13 @@
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: healthy-api-gateway
+spec:
+  rules:
+    - host: <api-gateway-address>
+      http:
+        paths:
+          - path: /health
+            backend:
+              serviceName: healthy-app
+              servicePort: 80
