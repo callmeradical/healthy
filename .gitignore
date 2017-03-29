@@ -23,4 +23,7 @@ _testmain.go
 *.test
 *.prof
 
+# Terraform stuff
+terraform/*.tfs*
+terraform/.terraform/*
 healthy
