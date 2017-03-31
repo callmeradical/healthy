@@ -30,6 +30,12 @@ resource "aws_internet_gateway" "gw" {
   }
 }
 
+resource "aws_route" "internet" {
+  route_table_id         = "${aws_vpc.ecs_demo.main_route_table_id}"
+  destination_cidr_block = "0.0.0.0/0"
+  gateway_id             = "${aws_internet_gateway.gw.id}"
+}
+
 resource "aws_subnet" "primary" {
   vpc_id            = "${aws_vpc.ecs_demo.id}"
   cidr_block        = "192.168.76.0/24"
@@ -80,6 +86,7 @@ module "instances" {
   source = "modules/ec2"
 
   instances       = 3
+  etcd_token      = "056fca74d23fe16bdccee7bf52c65bc2"
   ecs_cluster     = "${aws_ecs_cluster.demo.name}"
   security_groups = ["${module.sg1.sg1_id}"]
 

@@ -49,13 +49,76 @@ data "template_file" "user_data" {
   }
 }
 
+data "aws_iam_policy_document" "assume" {
+  statement {
+    actions = [
+      "sts:AssumeRole",
+    ]
+
+    principals {
+      type        = "Service"
+      identifiers = ["ec2.amazonaws.com"]
+    }
+  }
+}
+
+data "aws_iam_policy_document" "ecs_nodes" {
+  statement {
+    sid = "1"
+
+    actions = [
+      "ecs:CreateCluster",
+      "ecs:DeregisterContainerInstance",
+      "ecs:DiscoverPollEndpoint",
+      "ecs:Poll",
+      "ecs:RegisterContainerInstance",
+      "ecs:StartTelemetrySession",
+      "ecs:Submit*",
+      "ecr:GetAuthorizationToken",
+      "ecr:BatchCheckLayerAvailability",
+      "ecr:GetDownloadUrlForLayer",
+      "ecr:BatchGetImage",
+      "logs:CreateLogStream",
+      "logs:PutLogEvents",
+    ]
+
+    resources = ["*"]
+  }
+}
+
+resource "aws_iam_policy" "ecs" {
+  name   = "ecsnodes"
+  path   = "/"
+  policy = "${data.aws_iam_policy_document.ecs_nodes.json}"
+}
+
+resource "aws_iam_instance_profile" "ecs_profile" {
+  name  = "ecs_nodes_profile"
+  roles = ["${aws_iam_role.ecsrole.name}"]
+}
+
+resource "aws_iam_role" "ecsrole" {
+  name = "ecs_nodes_role"
+  path = "/"
+
+  assume_role_policy = "${data.aws_iam_policy_document.assume.json}"
+}
+
+resource "aws_iam_role_policy_attachment" "ecsrole" {
+  role       = "${aws_iam_role.ecsrole.name}"
+  policy_arn = "${aws_iam_policy.ecs.arn}"
+}
+
 resource "aws_instance" "node" {
   count                       = "${var.instances}"
   ami                         = "${data.aws_ami.coreos.id}"
   instance_type               = "t2.micro"
   subnet_id                   = "${element(var.subnets,count.index)}"
   associate_public_ip_address = true
-  security_groups             = ["${var.security_groups}"]
+  vpc_security_group_ids      = ["${var.security_groups}"]
+  user_data                   = "${data.template_file.user_data.rendered}"
+  iam_instance_profile        = "${aws_iam_instance_profile.ecs_profile.name}"
+  key_name                    = "aws1"
 
   tags {
     Name      = "ECS Node ${count.index}"
