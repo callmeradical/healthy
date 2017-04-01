@@ -69,9 +69,6 @@ resource "aws_subnet" "tertiary" {
   }
 }
 
-resource "aws_security_group" "coreos_to_coreos" {
-  name = "coreos-to-coreos"
-}
 
 resource "aws_ecs_cluster" "demo" {
   name = "workshop_demo"

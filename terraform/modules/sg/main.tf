@@ -19,52 +19,17 @@ resource "aws_security_group" "sg1" {
   }
 }
 
-resource "aws_security_group_rule" "ssh" {
+
+resource "aws_security_group_rule" "all_ingress" {
   type              = "ingress"
-  from_port         = 22
-  to_port           = 22
-  protocol          = "tcp"
-  cidr_blocks       = ["0.0.0.0/0"]
+  from_port         = 0
+  to_port           = 0
+  protocol          = "-1"
   security_group_id = "${aws_security_group.sg1.id}"
+  cidr_blocks = ["0.0.0.0/0"]
 }
 
-resource "aws_security_group_rule" "etcd1" {
-  type              = "ingress"
-  from_port         = 2379
-  to_port           = 2379
-  protocol          = "tcp"
-  self              = true
-  security_group_id = "${aws_security_group.sg1.id}"
-}
-
-resource "aws_security_group_rule" "etcd2" {
-  type              = "ingress"
-  from_port         = 2380
-  to_port           = 2380
-  protocol          = "tcp"
-  self              = true
-  security_group_id = "${aws_security_group.sg1.id}"
-}
-
-resource "aws_security_group_rule" "etcd3" {
-  type              = "ingress"
-  from_port         = 4001
-  to_port           = 4001
-  protocol          = "tcp"
-  self              = true
-  security_group_id = "${aws_security_group.sg1.id}"
-}
-
-resource "aws_security_group_rule" "etcd4" {
-  type              = "ingress"
-  from_port         = 7001
-  to_port           = 7001
-  protocol          = "tcp"
-  self              = true
-  security_group_id = "${aws_security_group.sg1.id}"
-}
-
-resource "aws_security_group_rule" "etcd5" {
+resource "aws_security_group_rule" "egress" {
   type              = "egress"
   from_port         = 0
   to_port           = 0
